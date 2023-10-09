@@ -1,0 +1,5 @@
+/core/io/storage actually create a file system, maybe smth like fat32 maybe a little bit optimised (working)
+
+add other registers in /core/regs/Registers and make an abstraction for accessing register's value
+
+fix RegisterValue

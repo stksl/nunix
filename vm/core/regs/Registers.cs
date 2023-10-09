@@ -3,7 +3,7 @@ using System.Reflection;
 namespace Nunix.Core;
 public static class Registers 
 {
-    private static Dictionary<RegType, Register> regsByTypes;
+    internal static Dictionary<RegType, Register> regsByTypes;
     #region General-Purpose 
     public static readonly Register RAX;
     public static readonly Register RBX;
@@ -76,75 +76,76 @@ public static class Registers
     static Registers()
     {
         #region gp_regs_init
-        RAX = new GPRegister(8, RegType.RAX);
-        RBX = new GPRegister(8, RegType.RBX);
-        RCX = new GPRegister(8, RegType.RCX);
-        RDX = new GPRegister(8, RegType.RDX);
-        RDI = new GPRegister(8, RegType.RDI);
-        RSI = new GPRegister(8, RegType.RSI);
-        RSP = new GPRegister(8, RegType.RSP);
-        RBP = new GPRegister(8, RegType.RBP);
-        R8 = new GPRegister(8, RegType.R8);
-        R9 = new GPRegister(8, RegType.R9);
-        R10 = new GPRegister(8, RegType.R10);
-        R11 = new GPRegister(8, RegType.R11);
-        R12 = new GPRegister(8, RegType.R12);
-        R13 = new GPRegister(8, RegType.R13);
-        R14 = new GPRegister(8, RegType.R14);
-        R15 = new GPRegister(8, RegType.R15);
+        RAX = new GPRegister((int)AsmSize.Qword, RegType.RAX);
+        RBX = new GPRegister((int)AsmSize.Qword, RegType.RBX);
+        RCX = new GPRegister((int)AsmSize.Qword, RegType.RCX);
+        RDX = new GPRegister((int)AsmSize.Qword, RegType.RDX);
+        RDI = new GPRegister((int)AsmSize.Qword, RegType.RDI);
+        RSI = new GPRegister((int)AsmSize.Qword, RegType.RSI);
+        RSP = new GPRegister((int)AsmSize.Qword, RegType.RSP);
+        RBP = new GPRegister((int)AsmSize.Qword, RegType.RBP);
+        R8 = new GPRegister((int)AsmSize.Qword, RegType.R8);
+        R9 = new GPRegister((int)AsmSize.Qword, RegType.R9);
+        R10 = new GPRegister((int)AsmSize.Qword, RegType.R10);
+        R11 = new GPRegister((int)AsmSize.Qword, RegType.R11);
+        R12 = new GPRegister((int)AsmSize.Qword, RegType.R12);
+        R13 = new GPRegister((int)AsmSize.Qword, RegType.R13);
+        R14 = new GPRegister((int)AsmSize.Qword, RegType.R14);
+        R15 = new GPRegister((int)AsmSize.Qword, RegType.R15);
 
-        EAX = new GPRegister(4, RegType.EAX);
-        EBX = new GPRegister(4, RegType.EBX);
-        ECX = new GPRegister(4, RegType.ECX);
-        EDX = new GPRegister(4, RegType.EDX);
-        EDI = new GPRegister(4, RegType.EDI);
-        ESI = new GPRegister(4, RegType.ESI);
-        ESP = new GPRegister(4, RegType.ESP);
-        EBP = new GPRegister(4, RegType.EBP);
-        R8d = new GPRegister(4, RegType.R8d);
-        R9d = new GPRegister(4, RegType.R9d);
-        R10d = new GPRegister(4, RegType.R10d);
-        R11d = new GPRegister(4, RegType.R11d);
-        R12d = new GPRegister(4, RegType.R12d);
-        R13d = new GPRegister(4, RegType.R13d);
-        R14d = new GPRegister(4, RegType.R14d);
-        R15d = new GPRegister(4, RegType.R15d);
+        EAX = new GPRegister((int)AsmSize.Dword, RegType.EAX);
+        EBX = new GPRegister((int)AsmSize.Dword, RegType.EBX);
+        ECX = new GPRegister((int)AsmSize.Dword, RegType.ECX);
+        EDX = new GPRegister((int)AsmSize.Dword, RegType.EDX);
+        EDI = new GPRegister((int)AsmSize.Dword, RegType.EDI);
+        ESI = new GPRegister((int)AsmSize.Dword, RegType.ESI);
+        ESP = new GPRegister((int)AsmSize.Dword, RegType.ESP);
+        EBP = new GPRegister((int)AsmSize.Dword, RegType.EBP);
+        R8d = new GPRegister((int)AsmSize.Dword, RegType.R8d);
+        R9d = new GPRegister((int)AsmSize.Dword, RegType.R9d);
+        R10d = new GPRegister((int)AsmSize.Dword, RegType.R10d);
+        R11d = new GPRegister((int)AsmSize.Dword, RegType.R11d);
+        R12d = new GPRegister((int)AsmSize.Dword, RegType.R12d);
+        R13d = new GPRegister((int)AsmSize.Dword, RegType.R13d);
+        R14d = new GPRegister((int)AsmSize.Dword, RegType.R14d);
+        R15d = new GPRegister((int)AsmSize.Dword, RegType.R15d);
 
-        AX = new GPRegister(2, RegType.AX);
-        BX = new GPRegister(2, RegType.BX);
-        CX = new GPRegister(2, RegType.CX);
-        DX = new GPRegister(2, RegType.DX);
-        DI = new GPRegister(2, RegType.DI);
-        SI = new GPRegister(2, RegType.SI);
-        SP = new GPRegister(2, RegType.SP);
-        BP = new GPRegister(2, RegType.BP);
-        R8w = new GPRegister(2, RegType.R8w);
-        R9w = new GPRegister(2, RegType.R9w);
-        R10w = new GPRegister(2, RegType.R10w);
-        R11w = new GPRegister(2, RegType.R11w);
-        R12w = new GPRegister(2, RegType.R12w);
-        R13w = new GPRegister(2, RegType.R13w);
-        R14w = new GPRegister(2, RegType.R14w);
-        R15w = new GPRegister(2, RegType.R15w);
+        AX = new GPRegister((int)AsmSize.Word, RegType.AX);
+        BX = new GPRegister((int)AsmSize.Word, RegType.BX);
+        CX = new GPRegister((int)AsmSize.Word, RegType.CX);
+        DX = new GPRegister((int)AsmSize.Word, RegType.DX);
+        DI = new GPRegister((int)AsmSize.Word, RegType.DI);
+        SI = new GPRegister((int)AsmSize.Word, RegType.SI);
+        SP = new GPRegister((int)AsmSize.Word, RegType.SP);
+        BP = new GPRegister((int)AsmSize.Word, RegType.BP);
+        R8w = new GPRegister((int)AsmSize.Word, RegType.R8w);
+        R9w = new GPRegister((int)AsmSize.Word, RegType.R9w);
+        R10w = new GPRegister((int)AsmSize.Word, RegType.R10w);
+        R11w = new GPRegister((int)AsmSize.Word, RegType.R11w);
+        R12w = new GPRegister((int)AsmSize.Word, RegType.R12w);
+        R13w = new GPRegister((int)AsmSize.Word, RegType.R13w);
+        R14w = new GPRegister((int)AsmSize.Word, RegType.R14w);
+        R15w = new GPRegister((int)AsmSize.Word, RegType.R15w);
 
-        AL = new GPRegister(1, RegType.AL);
-        BL = new GPRegister(1, RegType.BL);
-        CL = new GPRegister(1, RegType.CL);
-        DL = new GPRegister(1, RegType.DL);
-        DIL = new GPRegister(1, RegType.DIL);
-        SIL = new GPRegister(1, RegType.SIL);
-        SPL = new GPRegister(1, RegType.SPL);
-        BPL = new GPRegister(1, RegType.BPL);
-        R8b = new GPRegister(1, RegType.R8b);
-        R9b = new GPRegister(1, RegType.R9b);
-        R10b = new GPRegister(1, RegType.R10b);
-        R11b = new GPRegister(1, RegType.R11b);
-        R12b = new GPRegister(1, RegType.R12b);
-        R13b = new GPRegister(1, RegType.R13b);
-        R14b = new GPRegister(1, RegType.R14b);
-        R15b = new GPRegister(1, RegType.R15b);
+        AL = new GPRegister((int)AsmSize.Byte, RegType.AL);
+        BL = new GPRegister((int)AsmSize.Byte, RegType.BL);
+        CL = new GPRegister((int)AsmSize.Byte, RegType.CL);
+        DL = new GPRegister((int)AsmSize.Byte, RegType.DL);
+        DIL = new GPRegister((int)AsmSize.Byte, RegType.DIL);
+        SIL = new GPRegister((int)AsmSize.Byte, RegType.SIL);
+        SPL = new GPRegister((int)AsmSize.Byte, RegType.SPL);
+        BPL = new GPRegister((int)AsmSize.Byte, RegType.BPL);
+        R8b = new GPRegister((int)AsmSize.Byte, RegType.R8b);
+        R9b = new GPRegister((int)AsmSize.Byte, RegType.R9b);
+        R10b = new GPRegister((int)AsmSize.Byte, RegType.R10b);
+        R11b = new GPRegister((int)AsmSize.Byte, RegType.R11b);
+        R12b = new GPRegister((int)AsmSize.Byte, RegType.R12b);
+        R13b = new GPRegister((int)AsmSize.Byte, RegType.R13b);
+        R14b = new GPRegister((int)AsmSize.Byte, RegType.R14b);
+        R15b = new GPRegister((int)AsmSize.Byte, RegType.R15b);
         #endregion
         
+        // maybe refactor later, basically going through all of the regs fields via reflection
         regsByTypes = new Dictionary<RegType, Register>();
         FieldInfo[] fields = typeof(Registers).GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.Static);
         foreach(FieldInfo field in fields) 
@@ -152,7 +153,7 @@ public static class Registers
             Register reg = (Register)field.GetValue(null)!;
             // initializing register values right now, even if its a general-purpose register 
             // GetUpper() returns already present register in regsByTypes hashmap
-            reg.Value.Init();
+            reg.value.Init();
 
             regsByTypes[reg.RegType] = reg;
         }

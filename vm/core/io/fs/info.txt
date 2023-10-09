@@ -1,0 +1,91 @@
+
+CAT (Clusterized Allocation Table) is a file system, works pretty similar to FAT.
+
+some basic information about the CAT file system:
+
+as every file system, CAT contains files (dirs are files)
+similarly to unix-based file systems, every file has its own file handler and inode.
+
+
+Constraints:
+    => First minimal disk allocation is 4gb, when maxed out, is updates by 4gb.
+    => Max file size = 2^24 clusters. (by default 2^24 * 2048 = 32gb)
+    => At most, 2^32 clusters can be allocated.
+    => Cluster size ranges (1-256 sectors, by default 4). 
+
+
+
+CAT structure:
+
+    Header(8 bytes):
+        2 bytes = sector size in bytes (up to 65kb, usually 512b)
+        1 byte = cluster size in sectors (up to 256, by default 4)
+        1 byte = file system version (0x00 by default for now)
+        2 bytes = actual offset starting from the first cluster (at max 0xff_ff clusters for other storage)
+        2 bytes = reserved
+
+    Everyting after the header may be used by the fs core.
+
+    CAT header raw:
+|================32bit================|
+|   sector size    | cluster |  ver   |
+|      offset      |    reserved      |       
+|================32bit================|
+
+The first cluster starting at offset field is the root directory.
+
+Allocated clusters form doubly-linked lists, containing its type, file metadata and data.
+cluster structure:
+    1 byte = cluster type. (see cluster types)
+    4 bytes = next cluster
+    4 bytes = prev cluster.
+
+    IN CASE CLUSTER TYPE IS 0x01 (starting cluster):
+
+        1 byte = file type. (see file types)
+        2 bytes = reserved
+        4 bytes = file's parent directory cluster.
+        16 bytes = inode.
+
+        IN CASE FILE TYPE IS 0x02 (Directory):
+
+            4 bytes = folder handler cluster
+
+    Everything after is file data in that cluster.
+
+    cluster's structure raw:
+cluster types(1 byte):
+    0x00 = unused.
+    0x21 = first usable file cluster.
+    0x09 = allocated.
+
+file types (1 byte):
+    0x00 = File
+    0x04 = Directory
+
+first usable file's cluster:                        other allocated clusters:
+|================32bit================|     |================32bit================| 
+|              next cluster           |     |              next cluster           |
+|              prev cluster           |     |              prev cluster           |
+| f_type |   reserved                 |     |=====================================| 
+|              parent_dir             |
+|                inode                |
+|                                     |
+|                                     |
+|                                     |
+|=====================================|    
+
+directory handler structure:
+
+    for each entry:
+        24 bytes = entry name hash
+        4 bytes = entry first usable cluster.
+
+
+
+inode's structure(16 bytes):
+    5part => 24 bits = reserved (for now)
+    4part => 16 bits = bit masks for USER / GROUP / OTHERS flags to read/write/execute (r, w, ex, resv)
+    3part => 24 bits = file size in clusters.
+    2part => 32 bits = Creation time (UNIX timestamp)
+    1part => 32 bits = Last opened time (UNIX timestamp)

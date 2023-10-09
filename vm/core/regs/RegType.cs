@@ -1,5 +1,5 @@
 namespace Nunix.Core;
-public enum RegType : long 
+public enum RegType : int 
 {
     // Unkown register (error)
     Unkown = -1,
