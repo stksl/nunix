@@ -1,4 +1,5 @@
 {
     "vramsize": 536870912,
-    "vglobalsize": 4294967296
+    "vglobalsize": 4294967296,
+    "empty": true
 }

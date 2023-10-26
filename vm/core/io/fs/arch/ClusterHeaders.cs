@@ -7,39 +7,70 @@ namespace Nunix.IO;
 
 public class ClusterHeader
 {
-    public ClusterType ClusterType { get; internal set; }
-    public ClusterAddress Next { get; internal set; }
-    public ClusterAddress Prev { get; internal set; }
+    public readonly ClusterType ClusterType;
+    public readonly GlobalClusterAddress Next;
+    public readonly GlobalClusterAddress Prev;
 
-    internal ClusterHeader(ClusterType type, ClusterAddress next, ClusterAddress prev)
+    public int Size => this is FileClusterHeader fh ? (int)ClusterType + (int)fh.FileType : (int)ClusterType;
+    internal ClusterHeader(ClusterType type, GlobalClusterAddress next, GlobalClusterAddress prev)
     {
         ClusterType = type;
         Next = next;
         Prev = prev;
     }
-    public int GetSize() 
-    {
-        return this is FileClusterHeader fh ? (int)ClusterType + (int)fh.FileType : (int)ClusterType;
-    }
     public static ClusterHeader Parse(byte[] bytes, int index) 
     {
-        ClusterType type = (ClusterType)bytes[index];
+        ClusterType type = bytes[index] == 0 ? ClusterType.Default : (ClusterType)bytes[index];
 
-        ClusterAddress next = BitConverter.ToUInt32(bytes, index + 1);
-        ClusterAddress prev = BitConverter.ToUInt32(bytes, index + 5);
+        GlobalClusterAddress next = new(BitConverter.ToUInt32(bytes, index + 1));
+        GlobalClusterAddress prev = new(BitConverter.ToUInt32(bytes, index + 5));
 
         ClusterHeader h = new ClusterHeader(type, next, prev);
 
         // pipeline
         return type == ClusterType.StartingCluster ? FileClusterHeader.Parse(h, bytes, index + 9) : h;
     }
+    public byte[] GetBytes() 
+    {
+        List<byte> bytes = new List<byte>()
+        {
+            (byte)ClusterType
+        };
+        // 4 bytes
+        bytes.AddRange(BitConverter.GetBytes(Next.GlobalAddr));
+        // 4 bytes
+        bytes.AddRange(BitConverter.GetBytes(Prev.GlobalAddr));
+
+        if (this is FileClusterHeader fh)
+        {
+            // 1 byte 
+            bytes.Add((byte)fh.FileType);
+            // 2 bytes
+            bytes.AddRange(BitConverter.GetBytes(fh.Reserved));
+            // 4 bytes
+            bytes.AddRange(BitConverter.GetBytes(fh.ParentDir.LocalAddr));
+
+            // inode => 16 bytes
+            bytes.AddRange(BitConverter.GetBytes(fh.Inode.m_data[0]));
+            bytes.AddRange(BitConverter.GetBytes(fh.Inode.m_data[1]));
+
+
+        }
+        if (this is DirClusterHeader dh)
+        {
+            // 4 bytes
+            bytes.AddRange(BitConverter.GetBytes(dh.DirHandler.LocalAddr));
+        }
+
+        return bytes.ToArray();
+    }
 }
 public class FileClusterHeader : ClusterHeader
 {
-    public FileType FileType { get; internal set; }
-    public ushort Reserved { get; internal set; }
-    public ClusterAddress ParentDir { get; internal set; }
-    public Inode Inode { get; internal set; }
+    public readonly FileType FileType;
+    public readonly ushort Reserved;
+    public readonly ClusterAddress ParentDir;
+    public readonly Inode Inode;
     internal FileClusterHeader(ClusterHeader header,
         FileType ftype, ushort resv, ClusterAddress parent, Inode inode) : base(header.ClusterType, header.Next, header.Prev)
     {
@@ -63,7 +94,7 @@ public class FileClusterHeader : ClusterHeader
 }
 public sealed class DirClusterHeader : FileClusterHeader
 {
-    public ClusterAddress DirHandler { get; internal set; }
+    public readonly ClusterAddress DirHandler;
     internal DirClusterHeader(FileClusterHeader fh,
         ClusterAddress dirHandler) : base(fh, fh.FileType, fh.Reserved, fh.ParentDir, fh.Inode)
     {
@@ -72,36 +103,6 @@ public sealed class DirClusterHeader : FileClusterHeader
     // pipelined
     internal static DirClusterHeader Parse(FileClusterHeader fh, byte[] bytes, int index) 
     {
-        return new DirClusterHeader(fh, BitConverter.ToUInt32(bytes, index));
+        return new DirClusterHeader(fh, new(BitConverter.ToUInt32(bytes, index)));
     }
-}
-
-public struct ClusterAddress : IComparable<ClusterAddress>
-{
-    public uint Addr; 
-    public int CompareTo(ClusterAddress other)
-    {
-        return (int)(Addr - other.Addr);
-    }
-    public override bool Equals([NotNullWhen(true)] object? obj)
-    {
-        return obj is ClusterAddress ca && Addr == ca.Addr;
-    }
-    public override int GetHashCode()
-    {
-        return (int)Addr;
-    }
-    public static bool operator==(ClusterAddress left, ClusterAddress right) 
-    {
-        return left.Equals(right);
-    }
-    public static bool operator!=(ClusterAddress left, ClusterAddress right) 
-    {
-        return !left.Equals(right);
-    }
-    public static implicit operator ClusterAddress(uint u32) 
-    {
-        return new() {Addr = u32};
-    }
-
 }
