@@ -10,7 +10,7 @@ namespace Nunix.IO;
 public class ClusterHandler : IHandler, IDisposable
 {
     private readonly Stream stream;
-    private readonly CATHeader header;
+    internal readonly CATHeader header;
     /// <summary>
     /// Total max clusters allowed (size of the file system maximum)
     /// </summary>
@@ -91,6 +91,53 @@ public class ClusterHandler : IHandler, IDisposable
         AdvanceCluster(cluster.Address, SeekOrigin.Begin);
         await stream.WriteAsync(bytes.ToArray(), 0, bytes.Length);
         return CatOperationStatus.Succeed;
+    }
+
+    /// <summary>
+    /// links nexts and prevs in the order as passed.
+    /// </summary>
+    /// <param name="clusters"></param>
+    /// <returns></returns>
+    public async Task<CatOperationStatus> LinkClustersAsync(IList<ClusterAddress> clusters) 
+    {
+        for(int i = 0; i < clusters.Count; i++) 
+        {
+            Cluster cl = await GetClusterAsync(clusters[i].GetGlobalAddr(header));
+
+            if (i > 0) cl.Header.Prev = clusters[i - 1].GetGlobalAddr(header);
+            if (i + 1 < clusters.Count) cl.Header.Next = clusters[i + 1].GetGlobalAddr(header);
+
+            var status = await UpdateClusterAsync(cl);
+
+            if (status == CatOperationStatus.Failed) return CatOperationStatus.Failed;
+        }
+        
+        return CatOperationStatus.Succeed;
+    }
+    /// <summary>
+    /// Goes through all next (or prev) clusters applying <paramref name="predicate"/>, stops when true is returned
+    /// </summary>
+    /// <param name="startingCluster"></param>
+    /// <param name="predicate"></param>
+    /// <returns>
+    /// Very last cluster or first cluster where <paramref name="predicate"/> returned true 
+    /// </returns>
+    public async Task<Cluster> ThroughClustersAsync(Cluster startingCluster, Func<Cluster, bool> predicate, bool forward) 
+    {
+        Cluster curr = startingCluster;
+
+        GlobalClusterAddress nextAddr = curr.Header.Next;
+
+        if (!forward) nextAddr = curr.Header.Prev;
+        while (!predicate(curr) && nextAddr != GlobalClusterAddress.Zero) 
+        {
+            curr = await GetClusterAsync(curr.Header.Next);
+
+            nextAddr = curr.Header.Next;
+            if (!forward) nextAddr = curr.Header.Prev;
+        }
+
+        return curr;
     }
     public void Dispose()
     {

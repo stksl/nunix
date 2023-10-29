@@ -5,22 +5,22 @@ namespace Nunix.IO;
 
 public struct FullPath 
 {
-    public readonly string Raw {get
-    {
-        var runner = Path;
-        StringBuilder sb = new StringBuilder();
-        while (runner != null) 
-        {
-            sb.Append(runner.Value.ToString());
-            sb.Append('/');
-            runner = runner.Next;
-        }
-
-        return sb.ToString();
-    }}
-    public readonly LinkedListNode<FileName> Path;
-    public FullPath(LinkedListNode<FileName> fullpath)
+    public readonly LinkedList<FileName> Path;
+    public FullPath(LinkedList<FileName> fullpath)
     {
         Path = fullpath;
     }
+
+    public FullPath AppendLast(FileName filename) 
+    {
+        return new FullPath(new LinkedList<FileName>(Path).AddLast(filename).List!);
+    }
+    public FullPath RemoveLast() 
+    {
+        LinkedList<FileName> newpath = new LinkedList<FileName>(Path);
+        newpath.RemoveLast();
+
+        return new FullPath(newpath);
+    } 
+    
 }

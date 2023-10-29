@@ -19,7 +19,7 @@ public static class VMConsts
     /// Bitmap global offset in the file system (in clusters)
     /// </summary>
     public const int BITMAP_OFFSET = 1;
-    public const int HASH_FILENAME_LENGTH = 24;
+    public const int HASH_FILENAME_LENGTH = 16;
     #endregion
  
 }

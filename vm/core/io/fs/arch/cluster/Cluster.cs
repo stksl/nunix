@@ -22,8 +22,22 @@ public class Cluster
 
         Size = size;
     }
-
-    public unsafe byte[] GetBytes()
+    /// <summary>
+    /// References all clusters (adds next and prev to the headers).
+    /// </summary>
+    /// <param name="addresses"></param>
+    /// <returns></returns>
+    public static void ReferenceClusters(params Cluster[] clusters) 
+    {
+        for(int i = 1; i < clusters.Length - 1; i++) 
+        {
+            clusters[i].Header.Prev = clusters[i - 1].Address;
+            clusters[i].Header.Next = clusters[i + 1].Address;
+        }
+    }
+    public static Task ReferenceClustersAsync(params Cluster[] clusters) 
+        => Task.Run(() => ReferenceClusters(clusters)); 
+    public virtual byte[] GetBytes()
     {
         byte[] raw = new byte[Size];
         Header.GetBytes().CopyTo(raw, 0);

@@ -1,7 +1,15 @@
-/core/io/storage actually create a file system, maybe smth like fat32 maybe a little bit optimised (working)
 
 add other registers in /core/regs/Registers and make an abstraction for accessing register's value
 
 fix RegisterValue
 
 
+implement file creation, optimize bitmap. implement fast and easy cluster preparation 
+                                            (for newly allocated clusters)
+
+
+
+Made a Directory handler clusters. starting cluster has a special header (StartingHandlerCluster). 
+there is a class for that handler (DirHandlerCluster), inherits Cluster.
+
+also created a DirClusterHandler for optimised operations specifically for directory handlers.

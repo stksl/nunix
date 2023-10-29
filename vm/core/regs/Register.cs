@@ -1,7 +1,6 @@
 using System.Numerics;
 
 namespace Nunix.Core;
-
 public class Register : IRegister
 {
     public int Size => size;

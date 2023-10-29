@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Intrinsics.Arm;
 using System.Security.Cryptography;
 using System.Text;
@@ -8,22 +9,30 @@ namespace Nunix.IO;
 
 public struct FileName : IEquatable<FileName> 
 {
-    public static readonly string forbidden_symbols = "@#$%^&*=+{}[]'\"\\/<>?;:";
+    public const string forbidden_symbols = "@#$%^&*=+{}[]'\"\\/<>?;:";
     private byte[] rawBytes;
-    public string Raw;
-    private FileName(byte[] raw) 
+    public string RawHex;
+    public FileName(byte[] raw) 
     {
         rawBytes = raw;
 
-        Raw = string.Join("", rawBytes.Select(i => i.ToString("x2")));
+        RawHex = string.Join("", rawBytes.Select(i => i.ToString("x2")));
     }
     public bool Equals(FileName other) 
     {
-        return Raw == other.Raw;
+        return RawHex == other.RawHex;
+    }
+    public override bool Equals([NotNullWhen(true)] object? obj)
+    {
+        return obj is FileName other && Equals(other);
+    }
+    public override int GetHashCode()
+    {
+        return RawHex.GetHashCode();
     }
     public override string ToString()
     {
-        return Raw;
+        return RawHex;
     }
     public static FileName Create(string filename) 
     {
@@ -38,4 +47,5 @@ public struct FileName : IEquatable<FileName>
 
         return new FileName(raw);
     }
+    public byte[] GetBytes() => rawBytes;
 }

@@ -55,9 +55,9 @@ cluster structure:
 
     cluster's structure raw:
 cluster types(1 byte):
-    0x00 = unallocated.
-    0x21 = first usable file cluster.
-    0x09 = allocated.
+    0x20 = first usable file cluster.
+    0x09 = default.
+    0x20 + 3 = starting directory handler cluster. (3 bytes for the amount of items)
 
 file types (1 byte):
     0x00 = File
@@ -76,9 +76,15 @@ first usable file's cluster:                        other allocated clusters:
 |=====================================|    
 
 directory handler structure:
+    1 byte = cluster type.
+    4 bytes = next cluster
+    4 bytes = prev cluster.
+
+    IN CASE CLUSTER TYPE IS 0x23 
+        4 bytes = items count
 
     for each entry:
-        24 bytes = entry name hash
+        16 bytes = entry name hash
         4 bytes = entry first usable cluster.
 
 

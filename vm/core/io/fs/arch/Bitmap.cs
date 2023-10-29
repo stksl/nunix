@@ -18,6 +18,7 @@ public class Bitmap
     {
         handler = _handler;
     }
+    
     public async Task<IList<ClusterAddress>> GetFreeClustersAsync(int expectedCount)
     {
         List<ClusterAddress> freeClusters = new List<ClusterAddress>(expectedCount);
@@ -34,6 +35,7 @@ public class Bitmap
             );
             freeClusters.AddRange(free_cls);
         }
+
         return freeClusters;
     }
     private IList<ClusterAddress> readFreeClusters(Cluster bitmapCluster, uint bitmapOffset, int maxCount)
@@ -42,13 +44,11 @@ public class Bitmap
         for (int i = 0; i < bitmapCluster.Data.Length; i++)
         {
             if (addresses.Count >= maxCount) break;
-
-            // managing 8 clusters per time (one byte equals 8 clusters)
-            if (bitmapCluster.Data[i] == 0) continue;
+            // managing 8 clusters 
 
             for (int mask = 0; mask < 8; mask++)
             {
-                if (((bitmapCluster.Data[i] & (0b1000_0000 >> mask)) >> (8 - (mask + 1)) & 0b1) == 1)
+                if (((bitmapCluster.Data[i] >> (7 - mask)) & 0b1) == 0)
                 {
                     ClusterAddress addr =
                         (uint)(bitmapOffset * c_per_cl + i * 8 + mask);
@@ -85,5 +85,13 @@ public class Bitmap
         CatOperationStatus status = await handler.cl_handler.UpdateClusterAsync(bitmapCluster);
 
         if (status != CatOperationStatus.Succeed) throw new SystemException("Unable to update a cluster!");
+    }
+
+    public async Task UnallocClusters(IList<ClusterAddress> addresses) 
+    {
+        foreach(var addr in addresses) 
+        {
+            await ChangeClusterAsync(addr, false);
+        }
     }
 }

@@ -36,11 +36,21 @@ public readonly struct ClusterAddress
 /// </summary>
 public readonly struct GlobalClusterAddress 
 {
+    public static readonly GlobalClusterAddress Zero;
+    static GlobalClusterAddress() 
+    {
+        Zero = new GlobalClusterAddress(0);
+    }
     public readonly uint GlobalAddr; 
     public GlobalClusterAddress(uint globaladdr)
     {
         GlobalAddr = globaladdr;
     }
+    public ClusterAddress? GetClusterAddress(CATHeader header) 
+    {
+        long addr = GlobalAddr - header.StartOffset;
+        return addr >= 0 ? (ClusterAddress)addr : null;
+    } 
     public override bool Equals([NotNullWhen(true)]object? obj)
     {
         return obj is GlobalClusterAddress ca && GlobalAddr == ca.GlobalAddr;
